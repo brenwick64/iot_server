@@ -1,6 +1,5 @@
-import { IDevice } from "../definitions/IDevice";
+import { IDeviceController } from "../definitions/controller_definitions/IDeviceController";
 require('dotenv').config();
-
 
 // Connects to IoT Embedded System
 var net = require('net')
@@ -9,7 +8,7 @@ var net = require('net')
 const WebSocket = require('ws');
 
 
-export abstract class DeviceController implements IDevice {
+export abstract class DeviceController implements IDeviceController {
     connected: boolean
     ip: string
     port: number
@@ -33,8 +32,6 @@ export abstract class DeviceController implements IDevice {
     connect(): void {
         // Connects to server via websocket
         this.webSocket.on('open', () => {
-            console.log(`Server attempting to connect to IoT Object - "${this.name}"...`);
-            // Will only connect to IoT device if a websocket is established to the server
             this.iotConnection()
         })
         this.webSocket.on('error', (error: string) => {
@@ -56,7 +53,7 @@ export abstract class DeviceController implements IDevice {
 
         // Connects to IoT Device's socket
         this.iotSocket.connect(this.port, this.ip, () => {
-            console.log(`Server successfully connected to "${this.name}" (Device)`)
+            console.log(`(Controller) - successfully connected to "${this.name}" (Device)`)
             this.connected = true
             this.iotSocket.write('0')
             this.updateServer()
@@ -85,5 +82,6 @@ export abstract class DeviceController implements IDevice {
             console.log(`Error - Object failed to connect to device: ${this.name}`);
         })
     }
-
+    abstract getState(): Object
+    abstract handleCommand(command: string): void
 }

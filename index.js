@@ -114,6 +114,8 @@ wsServer.on('request', (request) => {
     const connection = request.accept(null, request.origin)
     clients[userID] = connection
 
+    console.log(typeof (clients));
+
     connection.sendUTF(JSON.stringify(iotDevicesState))
     connection.on('message', (message) => {
 

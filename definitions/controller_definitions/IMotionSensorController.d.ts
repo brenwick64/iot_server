@@ -1,4 +1,4 @@
-export interface IMotionSensor {
+export interface IMotionSensorController {
     status: string
     type: string
     lastActive: string

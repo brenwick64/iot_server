@@ -1,9 +1,9 @@
 const moment = require('moment')
 import { DeviceController } from "./DeviceController";
-import { IMotionSensor } from "../definitions/IMotionSensor";
+import { IMotionSensorController } from "../definitions/controller_definitions/IMotionSensorController";
 
 
-export class MotionSensorController extends DeviceController implements IMotionSensor {
+export class MotionSensorController extends DeviceController implements IMotionSensorController {
     status: string
     type: string
     lastActive: string
@@ -44,5 +44,17 @@ export class MotionSensorController extends DeviceController implements IMotionS
             activeLog: this.activeLog
         }
         return state
+    }
+
+    handleCommand(command: string): void {
+        switch (true) {
+            case command === 'off':
+                this.turn_off()
+                break;
+
+            case command === 'on':
+                this.turn_on()
+                break;
+        }
     }
 }

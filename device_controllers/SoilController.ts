@@ -1,5 +1,5 @@
 import { DeviceController } from "./DeviceController";
-import { ISoilController } from "../definitions/ISoilController";
+import { ISoilController } from "../definitions/controller_definitions/ISoilController";
 
 export class SoilController extends DeviceController implements ISoilController {
     type: string
@@ -29,5 +29,13 @@ export class SoilController extends DeviceController implements ISoilController 
             soilStatus: this.soilStatus
         }
         return state
+    }
+
+    handleCommand(command: string): void {
+        switch (true) {
+            case (command === 'wet' || command === 'dry' || command === 'moist' || command === 'damp'):
+                this.set_soil_status(command);
+                break;
+        }
     }
 }

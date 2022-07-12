@@ -1,4 +1,4 @@
-export interface IDevice {
+export interface IDeviceController {
     connected: boolean
     ip: string,
     port: number,
@@ -11,4 +11,6 @@ export interface IDevice {
     connect: () => void
     updateServer: () => void
     iotConnection: () => void
+    getState: () => Object
+    handleCommand: (command: string) => void
 }

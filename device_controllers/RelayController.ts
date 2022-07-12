@@ -1,5 +1,5 @@
 import { DeviceController } from "./DeviceController";
-import { IRelayController } from "../definitions/IRelayController";
+import { IRelayController } from "../definitions/controller_definitions/IRelayController";
 
 
 export class RelayController extends DeviceController implements IRelayController {
@@ -37,4 +37,19 @@ export class RelayController extends DeviceController implements IRelayControlle
         }
         return state
     }
+
+    handleCommand(command: string): void {
+        switch (true) {
+            case command === 'on':
+                this.turn_on()
+                break;
+            case command === 'off':
+                this.turn_off()
+                break;
+            case command === 'toggle':
+                this.toggle()
+                break;
+        }
+    }
+
 }
