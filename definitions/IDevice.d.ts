@@ -1,4 +1,4 @@
-interface IDevice {
+export interface IDevice {
     connected: boolean
     ip: string,
     port: number,
@@ -9,10 +9,6 @@ interface IDevice {
     webSocket: any
 
     connect: () => void
-
-
-
-
-
-
+    updateServer: () => void
+    iotConnection: () => void
 }

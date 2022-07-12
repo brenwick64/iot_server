@@ -1,4 +1,6 @@
-import { timeStamp } from "console";
+import { IDevice } from "../definitions/IDevice";
+require('dotenv').config();
+
 
 // Connects to IoT Embedded System
 var net = require('net')
@@ -7,7 +9,7 @@ var net = require('net')
 const WebSocket = require('ws');
 
 
-class Device implements IDevice {
+export abstract class DeviceController implements IDevice {
     connected: boolean
     ip: string
     port: number
@@ -25,10 +27,10 @@ class Device implements IDevice {
         this.top = top
         this.left = left
         this.iotSocket = new net.Socket()
-        this.webSocket = new WebSocket('ws://192.168.1.79:8000');
+        this.webSocket = new WebSocket(`ws://${process.env.WEBSOCKET_IP}:${process.env.PORT}`);
     }
 
-    connect() {
+    connect(): void {
         // Connects to server via websocket
         this.webSocket.on('open', () => {
             console.log(`Server attempting to connect to IoT Object - "${this.name}"...`);
@@ -40,7 +42,7 @@ class Device implements IDevice {
         })
     }
 
-    updateServer() {
+    updateServer(): void {
         this.webSocket.send(JSON.stringify({
             type: "message",
             command: "update",
@@ -48,7 +50,7 @@ class Device implements IDevice {
         }))
     }
 
-    iotConnection() {
+    iotConnection(): void {
         // Pings the socket and tests for a connection drop
         this.iotSocket.setKeepAlive(true, 5000)
 
@@ -85,5 +87,3 @@ class Device implements IDevice {
     }
 
 }
-
-export default Device
