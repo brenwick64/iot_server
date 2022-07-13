@@ -8,9 +8,10 @@ export interface IDeviceController {
     iotSocket: any
     webSocket: any
 
-    connect: () => void
-    updateServer: () => void
-    iotConnection: () => void
+    connectWs: () => void
+    updateWs: () => void
+    connectDevice: () => void
+    reconnectDevice: () => void
     getState: () => Object
     handleCommand: (command: string) => void
 }

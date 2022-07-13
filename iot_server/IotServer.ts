@@ -18,11 +18,11 @@ export class IotServer implements IIotServer {
 
 
     constructor(iotControllers: Array<IDeviceController>) {
-        // Configures Websocket Client Server
+        // Websocket Client Server
         this.clients = []
         this.http = http.createServer()
         this.clientServer = new websocket({ httpServer: this.http })
-        // Stores device data
+        // Device data
         this.iotControllers = [...iotControllers]
         this.iotState = []
     }
@@ -32,12 +32,13 @@ export class IotServer implements IIotServer {
         this.http.listen(PORT)
         console.log(`websocket server listening on port: ${PORT}`);
 
-        // Initial Connections
-        this.iotControllers.map(device => { device.connect() })
+        // Initial connections to Controllers
+        this.iotControllers.map(device => { device.connectWs() })
         this.updateIoTState()
         this.runClientServer()
     }
 
+    // Replaces current state with state polled from Controllers
     updateIoTState(): void {
         this.iotState = []
         this.iotControllers.map(device => {
@@ -45,20 +46,20 @@ export class IotServer implements IIotServer {
         })
     }
 
-
+    // Generates unique user ID for each client connection
     getUniqueID(): string {
-        // Generates unique user ID for each client connection
         const partition = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
         return partition() + partition() + '-' + partition()
     };
 
-
+    // Sends commands to desired controller to invoke on the device
     commandHandler(name: string, command: string) {
         this.iotControllers.map(device => {
             if (device.name === name) { device.handleCommand(command) }
         })
     }
 
+    // WS Server request handling
     runClientServer(): void {
         this.clientServer.on('request', (request: any) => {
 

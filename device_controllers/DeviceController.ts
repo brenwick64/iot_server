@@ -7,7 +7,6 @@ var net = require('net')
 // Connects to IoT Webserver
 const WebSocket = require('ws');
 
-
 export abstract class DeviceController implements IDeviceController {
     connected: boolean
     ip: string
@@ -29,17 +28,18 @@ export abstract class DeviceController implements IDeviceController {
         this.webSocket = new WebSocket(`ws://${process.env.WEBSOCKET_IP}:${process.env.PORT}`);
     }
 
-    connect(): void {
-        // Connects to server via websocket
+    // Connects controller instance to main websocket server
+    connectWs(): void {
         this.webSocket.on('open', () => {
-            this.iotConnection()
+            this.connectDevice()
         })
         this.webSocket.on('error', (error: string) => {
             console.log(`Error - ${this.name} failed to connect to Server.`);
         })
     }
 
-    updateServer(): void {
+    // Commands the main websocket server to refresh its state
+    updateWs(): void {
         this.webSocket.send(JSON.stringify({
             type: "message",
             command: "update",
@@ -47,29 +47,30 @@ export abstract class DeviceController implements IDeviceController {
         }))
     }
 
-    iotConnection(): void {
+    // Will attempt to reconnect a disconnected websocket indefinitely
+    reconnectDevice = (): void => {
+        setTimeout(() => {
+            console.log(`Controller (${this.name}) - Attempting to connect to Device...`);
+            this.iotSocket.removeAllListeners()
+            this.connectDevice()
+        }, 2000)
+    }
+
+    // All device socket connection and configuration
+    connectDevice(): void {
+
+        // Establishes connection
+        this.iotSocket.connect(this.port, this.ip, () => {
+            this.connected = true
+            this.iotSocket.write('0')
+            console.log(`Controller (${this.name}) - Successfully connected to Device.`)
+            this.updateWs()
+        })
+
         // Pings the socket and tests for a connection drop
         this.iotSocket.setKeepAlive(true, 5000)
 
-        // Connects to IoT Device's socket
-        this.iotSocket.connect(this.port, this.ip, () => {
-            console.log(`(Controller) - successfully connected to "${this.name}" (Device)`)
-            this.connected = true
-            this.iotSocket.write('0')
-            this.updateServer()
-        })
-
-        this.iotSocket.on('end', () => {
-            console.log('Connection Terminated.');
-        })
-
-        this.iotSocket.on('close', () => {
-            console.log(`Server terminating websocket for - "${this.name}"`);
-            this.connected = false;
-            this.updateServer();
-        })
-
-        // Gives the IoT Server a command to execute
+        // Sends command from device to main websocket server
         this.iotSocket.on('data', (data: any) => {
             let command = data.toString('utf-8');
             this.webSocket.send(JSON.stringify({
@@ -78,10 +79,24 @@ export abstract class DeviceController implements IDeviceController {
                 name: this.name
             }));
         })
+
+        // Disconnection or termination of device socket
+        this.iotSocket.on('end', () => {
+            this.connected = false
+            this.updateWs()
+            this.reconnectDevice()
+        })
+        this.iotSocket.on('close', () => {
+            this.connected = false
+            this.updateWs()
+            this.reconnectDevice()
+        })
+
+        // TODO - Error handling + definitions
         this.iotSocket.on('error', (error: string) => {
-            console.log(`Error - Object failed to connect to device: ${this.name}`);
         })
     }
+
     abstract getState(): Object
     abstract handleCommand(command: string): void
 }
