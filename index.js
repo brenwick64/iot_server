@@ -3,20 +3,24 @@ const { RelayController } = require('./device_controllers/RelayController')
 const { MotionSensorController } = require('./device_controllers/MotionSensorController')
 const { SoilController } = require('./device_controllers/SoilController')
 
+const { devices } = require('./data/devices')
+
 let iotControllers = []
 
-// Relays - IP + 200
-iotControllers.push(new RelayController('192.168.1.200', '80', 'Office Light', '95%', '25%'));
-iotControllers.push(new RelayController('192.168.1.201', '80', 'TV Lamp', '87%', '81%'));
-iotControllers.push(new RelayController('192.168.1.202', '80', 'Corner Lamp', '65%', '45%'));
-
-// Motion Sensors - IP + 120
-iotControllers.push(new MotionSensorController('192.168.1.120', '80', 'Bedroom Window', '7%', '60%'));
-iotControllers.push(new MotionSensorController('192.168.1.121', '80', 'Balcony Door', '23%', '70%'));
-
-// Soil Sensors - IP + 220
-iotControllers.push(new SoilController('192.168.1.220', '80', 'Bonzai Tree', '75%', '60%'));
-
+devices.forEach(device => {
+    let type = device.type
+    switch (true) {
+        case type === 'relay':
+            iotControllers.push(new RelayController(device.ip, device.port, device.name, device.top, device.left))
+            break;
+        case type === 'motionsensor':
+            iotControllers.push(new MotionSensorController(device.ip, device.port, device.name, device.top, device.left))
+            break;
+        case type === 'soilsensor':
+            iotControllers.push(new SoilController(device.ip, device.port, device.name, device.top, device.left))
+            break;
+    }
+})
 
 let server = new IotServer(iotControllers);
 server.init()
